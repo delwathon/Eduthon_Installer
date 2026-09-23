@@ -94,7 +94,7 @@ The installer writes `eduthon.config.json` in the web root:
 }
 ```
 
-The backend is multi-tenant and is never installed on the school's server (see Delwathon Admin's `docs/multi-tenancy.md`). At start-up the Eduthon frontend must load `/eduthon.config.json`, then send `tenant_header: tenant` on every request to `api_url`. A portal is never connected without a tenant ID. If the file is missing, as on Delwathon-hosted portals, it falls back to `GET {engine}/directory?host=…`. The frontend currently hard-codes its API URL in `src/main.js`, so it needs this change before self-hosted portals can reach their backend. Its build is also broken on Linux: `src/router/index.js` imports `permissions/show.vue`, but the file is named `Show.vue`.
+The backend is multi-tenant and is never installed on the school's server (see Delwathon Admin's `docs/multi-tenancy.md`). At start-up the Eduthon frontend must load `/eduthon.config.json`, then send `tenant_header: tenant` on every request to `api_url`. A portal is never connected without a tenant ID. If the file is missing, as on Delwathon-hosted portals, it falls back to `GET {engine}/directory?host=…`. The frontend does this in `src/tenant.js`.
 
 ## What changed from the previous installer
 
