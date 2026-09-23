@@ -86,8 +86,8 @@ The installer writes `eduthon.config.json` in the web root:
   "school": "Heritage College",
   "tenant": "01jk8z3v5t6m9q2w4e7r1y0u3p",
   "tenant_header": "X-Eduthon-Tenant",
-  "api_url": "https://api.eduthon.ng/api/",
-  "backend_url": "https://api.eduthon.ng/",
+  "api_url": "https://eduthonapi.delwathon.com/api/",
+  "backend_url": "https://eduthonapi.delwathon.com/",
   "portal_url": "https://portal.heritage.sch.ng/",
   "engine_url": "https://engine.delwathon.com/api/",
   "installed_at": "2026-09-23T08:32:22+00:00"
