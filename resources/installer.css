@@ -56,11 +56,11 @@
 
 @layer components {
     .btn-primary {
-        @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#1a44c2] px-5 text-[14.5px] font-semibold text-white shadow-sm transition hover:bg-[#1537a3] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#2f5ae0] dark:hover:bg-[#3d68ee];
+        @apply inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg whitespace-nowrap bg-[#1a44c2] px-5 text-[14.5px] font-semibold text-white shadow-sm transition hover:bg-[#1537a3] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#2f5ae0] dark:hover:bg-[#3d68ee];
     }
 
     .btn-ghost {
-        @apply inline-flex h-11 items-center justify-center rounded-lg px-4 text-[14px] font-medium text-ink-muted transition hover:bg-surface-hover hover:text-ink;
+        @apply inline-flex h-11 shrink-0 items-center justify-center rounded-lg whitespace-nowrap px-4 text-[14px] font-medium text-ink-muted transition hover:bg-surface-hover hover:text-ink;
     }
 
     .btn-sm { @apply h-9 px-3.5 text-[13.5px]; }

@@ -24,7 +24,7 @@ $position = $step === null ? -1 : (int) array_search($step, $keys, true);
 </head>
 <body class="min-h-screen bg-canvas text-ink antialiased">
     <div class="flex min-h-screen flex-col lg:flex-row">
-        <aside class="relative overflow-hidden bg-rail px-6 py-6 text-white lg:w-[22rem] lg:shrink-0 lg:px-10 lg:py-10 xl:w-[26rem] xl:pl-[max(2.5rem,calc((100vw-80rem)/2+2.5rem))]">
+        <aside class="relative overflow-hidden bg-rail px-6 py-6 text-white lg:w-[22rem] lg:shrink-0 lg:px-10 lg:py-10">
             <div class="pointer-events-none absolute -top-24 -left-24 size-72 rounded-full bg-sky-500/20 blur-3xl"></div>
             <div class="pointer-events-none absolute -right-24 bottom-0 size-72 rounded-full bg-emerald-500/15 blur-3xl"></div>
 
@@ -64,7 +64,7 @@ $position = $step === null ? -1 : (int) array_search($step, $keys, true);
             </div>
         </aside>
 
-        <main class="flex flex-1 flex-col px-5 py-8 sm:px-10 lg:px-14 lg:py-14">
+        <main class="mx-auto flex w-full max-w-4xl flex-1 flex-col px-5 py-8 sm:px-10 lg:px-14 lg:py-14">
             <div class="w-full max-w-2xl flex-1">
                 <?php if (! empty($error)): ?>
                     <div class="mb-6 flex gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200" role="alert">
