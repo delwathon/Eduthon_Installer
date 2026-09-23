@@ -1,0 +1,98 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Local development server for the installer.
+ *
+ *   php bin/serve [--port=8200] [--engine=http://127.0.0.1:8123/api/] [--fresh]
+ *
+ * The installer deploys into the folder that contains it, so it cannot run
+ * from this repository. This copies installer/ into a disposable sandbox
+ * website (.sandbox/public_html/installer) and serves that with PHP's
+ * built-in server. Run it again after changing code; --fresh wipes the
+ * sandbox (including any "installed" portal) and starts over.
+ */
+
+$root = dirname(__DIR__);
+$options = getopt('', ['port::', 'engine::', 'fresh']);
+$port = (int) ($options['port'] ?? 8200);
+$engine = rtrim($options['engine'] ?? getenv('EDUTHON_ENGINE_URL') ?: 'http://127.0.0.1:8123/api/', '/').'/';
+$webRoot = $root.'/.sandbox/public_html';
+$target = $webRoot.'/installer';
+
+function copy_tree(string $from, string $to): void
+{
+    @mkdir($to, 0755, true);
+
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($from, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST) as $item) {
+        $relative = substr($item->getPathname(), strlen($from) + 1);
+
+        if ($relative === 'config.local.php' || str_starts_with($relative, 'storage/')) {
+            continue;
+        }
+
+        $destination = $to.'/'.$relative;
+        $item->isDir() ? @mkdir($destination, 0755, true) : copy($item->getPathname(), $destination);
+    }
+
+    @mkdir($to.'/storage', 0755, true);
+    copy($from.'/storage/.htaccess', $to.'/storage/.htaccess');
+}
+
+function remove_tree(string $path): void
+{
+    if (! is_dir($path)) {
+        return;
+    }
+
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $item) {
+        $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
+    }
+
+    rmdir($path);
+}
+
+if (isset($options['fresh'])) {
+    remove_tree($root.'/.sandbox');
+}
+
+// Rebuild the stylesheet so view changes are picked up.
+if (is_dir($root.'/node_modules')) {
+    passthru('cd '.escapeshellarg($root).' && npm run --silent build:css');
+} else {
+    fwrite(STDERR, "Tip: run `npm install` once so the stylesheet can be rebuilt.\n");
+}
+
+copy_tree($root.'/installer', $target);
+
+if (! is_file($webRoot.'/index.html')) {
+    file_put_contents($webRoot.'/index.html', "<!doctype html><title>Sandbox website</title><h1>Sandbox website</h1><p>The Eduthon portal replaces this page when you run the installer at <a href=\"/installer/\">/installer/</a>.</p>\n");
+}
+
+$localConfig = $target.'/config.local.php';
+
+if (! is_file($localConfig)) {
+    $keys = array_values(array_filter(array_map('trim', explode(',', (string) getenv('EDUTHON_RELEASE_PUBLIC_KEYS')))));
+
+    if ($keys === []) {
+        // Development only: ask the local Delwathon Admin for its release key.
+        $response = @file_get_contents($engine.'releases/public-key');
+        $key = json_decode((string) $response, true)['public_key'] ?? null;
+        $keys = $key ? [$key] : [];
+    }
+
+    file_put_contents($localConfig, '<?php return '.var_export(['engine_url' => $engine, 'trusted_keys' => $keys], true).";\n");
+
+    if ($keys === []) {
+        fwrite(STDERR, "Warning: no trusted release key. Start Delwathon Admin with ENGINE_SIGNING_KEY set, or pass EDUTHON_RELEASE_PUBLIC_KEYS, then run with --fresh.\n");
+    }
+}
+
+echo "\nEduthon installer sandbox\n";
+echo "  Installer : http://127.0.0.1:{$port}/installer/\n";
+echo "  Website   : http://127.0.0.1:{$port}/\n";
+echo "  Engine    : {$engine}\n";
+echo "  Sandbox   : {$webRoot}\n\n";
+
+putenv('PHP_CLI_SERVER_WORKERS=4');
+passthru(sprintf('PHP_CLI_SERVER_WORKERS=4 %s -S 127.0.0.1:%d -t %s', escapeshellarg(PHP_BINARY), $port, escapeshellarg($webRoot)));

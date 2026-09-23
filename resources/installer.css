@@ -1,0 +1,94 @@
+@import 'tailwindcss';
+
+@source '../installer/views';
+
+@theme {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+    --color-rail: #0a1a44;
+}
+
+@theme inline {
+    --color-canvas: var(--canvas);
+    --color-surface: var(--surface);
+    --color-surface-muted: var(--surface-muted);
+    --color-surface-hover: var(--surface-hover);
+    --color-line: var(--line);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-ink-subtle: var(--ink-subtle);
+    --color-brand: var(--brand);
+}
+
+:root {
+    --canvas: #f5f7fb;
+    --surface: #ffffff;
+    --surface-muted: #f8fafd;
+    --surface-hover: #eef2f8;
+    --line: #e2e7f0;
+    --ink: #0d1628;
+    --ink-muted: #4a5773;
+    --ink-subtle: #7a869d;
+    --brand: #1a44c2;
+    color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --canvas: #080d1c;
+        --surface: #0f1628;
+        --surface-muted: #0c1324;
+        --surface-hover: #172038;
+        --line: #1f2a44;
+        --ink: #e6ebf5;
+        --ink-muted: #a1acc3;
+        --ink-subtle: #6b7792;
+        --brand: #7aa2ff;
+        color-scheme: dark;
+    }
+}
+
+@layer base {
+    body { font-feature-settings: 'cv11'; }
+    [hidden] { display: none !important; }
+    :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+}
+
+@layer components {
+    .btn-primary {
+        @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#1a44c2] px-5 text-[14.5px] font-semibold text-white shadow-sm transition hover:bg-[#1537a3] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#2f5ae0] dark:hover:bg-[#3d68ee];
+    }
+
+    .btn-ghost {
+        @apply inline-flex h-11 items-center justify-center rounded-lg px-4 text-[14px] font-medium text-ink-muted transition hover:bg-surface-hover hover:text-ink;
+    }
+
+    .btn-sm { @apply h-9 px-3.5 text-[13.5px]; }
+
+    .label { @apply mb-1.5 block text-[13.5px] font-medium text-ink; }
+
+    .control {
+        @apply block h-11 w-full rounded-lg border border-line bg-surface px-3.5 text-[15px] text-ink shadow-xs outline-none placeholder:text-ink-subtle focus:border-[var(--brand)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--brand)_18%,transparent)];
+    }
+
+    .step-dot { @apply flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-hover text-[12px] font-bold text-ink-muted; }
+
+    .status-ok { @apply mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300; }
+    .status-fail { @apply mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300; }
+    .status-warn { @apply mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-[13px] font-bold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300; }
+
+    .task-icon { @apply relative mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-line; }
+
+    [data-status='running'] .task-icon { @apply border-[var(--brand)] border-t-transparent; animation: spin 0.8s linear infinite; }
+    [data-status='done'] .task-icon { @apply border-emerald-500 bg-emerald-500; }
+    [data-status='warning'] .task-icon { @apply border-amber-500 bg-amber-500; }
+    [data-status='failed'] .task-icon { @apply border-red-500 bg-red-500; }
+    [data-status='done'] .task-icon::after { content: ''; @apply block h-2.5 w-1.5 -translate-y-px rotate-45 border-r-2 border-b-2 border-white; }
+    [data-status='warning'] .task-icon::after { content: '!'; @apply text-[12px] font-bold text-white; }
+    [data-status='failed'] .task-icon::after { content: '×'; @apply text-[15px] leading-none font-bold text-white; }
+    [data-status='pending'] .task-message:empty { display: none; }
+    [data-status='failed'] .task-message { @apply text-red-700 dark:text-red-300; }
+    [data-status='warning'] .task-message { @apply text-amber-800 dark:text-amber-200; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+}

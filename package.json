@@ -1,0 +1,13 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "php bin/serve",
+        "dev:fresh": "php bin/serve --fresh",
+        "build:css": "tailwindcss -i resources/installer.css -o installer/assets/installer.css --minify",
+        "watch:css": "tailwindcss -i resources/installer.css -o installer/assets/installer.css --watch"
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.0.0",
+        "tailwindcss": "^4.0.0"
+    }
+}

@@ -1,0 +1,76 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Builds the distributable installer: dist/eduthon-installer-{version}.zip
+ *
+ *   EDUTHON_RELEASE_PUBLIC_KEYS=<base64>[,<base64>] php bin/build [--engine=https://engine.delwathon.com/api/]
+ *
+ * The public keys are the Ed25519 keys Delwathon Admin signs releases with
+ * (Releases → Signing key). Builds without a valid key are refused.
+ */
+
+$root = dirname(__DIR__);
+$source = $root.'/installer';
+$options = getopt('', ['engine::', 'keys::', 'output::']);
+
+$keys = array_values(array_filter(array_map('trim', explode(',', (string) ($options['keys'] ?? getenv('EDUTHON_RELEASE_PUBLIC_KEYS') ?: '')))));
+
+if ($keys === []) {
+    fwrite(STDERR, "Set EDUTHON_RELEASE_PUBLIC_KEYS (or --keys=) to the release signing public key(s) from Delwathon Admin.\n");
+    exit(1);
+}
+
+foreach ($keys as $key) {
+    $binary = base64_decode($key, true);
+
+    if ($binary === false || strlen($binary) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+        fwrite(STDERR, "Not a valid Ed25519 public key: {$key}\n");
+        exit(1);
+    }
+}
+
+$engine = $options['engine'] ?? null;
+
+if ($engine !== null && ! str_starts_with($engine, 'https://')) {
+    fwrite(STDERR, "The engine URL must use HTTPS.\n");
+    exit(1);
+}
+
+$version = require $source.'/version.php';
+$output = $options['output'] ?? $root.'/dist/eduthon-installer-'.$version.'.zip';
+@mkdir(dirname($output), 0755, true);
+@unlink($output);
+
+$config = file_get_contents($source.'/config.php');
+$config = str_replace("        // '@trusted-keys@'", implode("\n", array_map(fn ($key) => "        '{$key}',", $keys)), $config);
+
+if ($engine !== null) {
+    $config = preg_replace("#'engine_url' => '[^']*'#", "'engine_url' => '".rtrim($engine, '/')."/'", $config);
+}
+
+$zip = new ZipArchive;
+$zip->open($output, ZipArchive::CREATE);
+
+$files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source, FilesystemIterator::SKIP_DOTS));
+
+foreach ($files as $file) {
+    $relative = substr($file->getPathname(), strlen($source) + 1);
+
+    if ($relative === 'config.local.php' || (str_starts_with($relative, 'storage/') && ! in_array($relative, ['storage/.htaccess', 'storage/index.html'], true))) {
+        continue;
+    }
+
+    if ($relative === 'config.php') {
+        $zip->addFromString('installer/config.php', $config);
+
+        continue;
+    }
+
+    $zip->addFile($file->getPathname(), 'installer/'.$relative);
+}
+
+$zip->close();
+
+printf("Built %s (%s bytes)\nsha256 %s\nTrusted keys: %d\n", $output, number_format(filesize($output)), hash_file('sha256', $output), count($keys));
+printf("Publish it from Delwathon Admin: php artisan releases:upload installer %s %s --publish\n", $version, $output);
