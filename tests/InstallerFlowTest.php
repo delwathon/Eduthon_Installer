@@ -346,7 +346,7 @@ final class InstallerFlowTest extends TestCase
             'school' => ['name' => 'Heritage College', 'hosting' => 'self_hosted'],
             'servers' => ['backend_parent_url' => 'https://api.delwathon.com', 'frontend_parent_url' => 'https://eduthon.ng', 'engine_url' => 'https://engine.delwathon.com/api/'],
             'backend' => $backendReady
-                ? ['ready' => true, 'tenant' => '01jk8z3v5t6m9q2w4e7r1y0u3p', 'tenant_header' => 'X-Eduthon-Tenant', 'dedicated' => false, 'url' => 'https://api.delwathon.com/', 'api_url' => 'https://api.delwathon.com/api/', 'health_url' => 'https://api.delwathon.com/api/verify-install']
+                ? ['ready' => true, 'tenant' => '01jk8z3v5t6m9q2w4e7r1y0u3p', 'tenant_header' => 'X-Eduthon-Tenant', 'url' => 'https://api.delwathon.com/', 'api_url' => 'https://api.delwathon.com/api/', 'health_url' => 'https://api.delwathon.com/api/verify-install']
                 : ['ready' => false, 'tenant' => null, 'url' => null, 'api_url' => null, 'health_url' => null],
             'releases' => ['channel' => 'stable', 'frontend' => '2.5.0'],
             'support' => ['company' => 'Delwathon IT Solutions', 'email' => 'support@delwathon.com'],
