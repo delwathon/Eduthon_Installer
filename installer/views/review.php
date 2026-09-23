@@ -13,7 +13,7 @@ $upToDate = $mode === 'update' && $release !== null && ! $release['update_availa
         <dd class="sm:col-span-2">
             <?php if ($backendReady): ?>
                 <span class="font-mono text-[13px] break-all"><?= e($config['backend']['url']) ?></span>
-                <span class="block text-[12.5px] text-ink-subtle">Hosted by Delwathon</span>
+                <span class="block text-[12.5px] text-ink-subtle">Hosted by Delwathon · tenant <span class="font-mono"><?= e($config['backend']['tenant'] ?? '') ?></span></span>
             <?php else: ?>
                 <span class="font-medium text-red-700 dark:text-red-300">Not assigned yet</span>
             <?php endif ?>

@@ -53,16 +53,17 @@ final class HealthCheck
     }
 
     /**
+     * @param  array<string, string>  $tenantHeaders  Identify the school to the multi-tenant backend.
      * @return array{ok: bool, message: string}
      */
-    public function backend(?string $healthUrl): array
+    public function backend(?string $healthUrl, array $tenantHeaders = []): array
     {
         if ($healthUrl === null) {
             return ['ok' => false, 'message' => 'Delwathon has not assigned a backend to this school yet.'];
         }
 
         try {
-            $response = $this->transport->send('GET', $healthUrl, ['Accept' => 'application/json'], timeout: 20);
+            $response = $this->transport->send('GET', $healthUrl, ['Accept' => 'application/json'] + $tenantHeaders, timeout: 20);
         } catch (TransportException $exception) {
             return ['ok' => false, 'message' => 'The Eduthon backend could not be reached from this server: '.$exception->getMessage()];
         }

@@ -215,9 +215,18 @@ final class Pipeline
             throw new DeployException('Delwathon has not assigned a backend to this school yet, so the portal cannot be connected.');
         }
 
+        $tenant = $run->config('backend.tenant');
+
+        if (! is_string($tenant) || $tenant === '') {
+            throw new DeployException('Delwathon did not provide a tenant ID for this school, so the portal cannot be connected.');
+        }
+
         $this->runtime->writeConfig([
+            'config_version' => 2,
             'version' => $run->release('version'),
             'school' => $run->config('school.name'),
+            'tenant' => $tenant,
+            'tenant_header' => $run->config('backend.tenant_header') ?? 'X-Eduthon-Tenant',
             'api_url' => $apiUrl,
             'backend_url' => $run->config('backend.url'),
             'portal_url' => $run->get('portal_url'),
@@ -243,7 +252,9 @@ final class Pipeline
 
         $warnings = [];
         $portal = $this->health->portal((string) $run->get('portal_url'), (string) $run->release('version'));
-        $backend = $this->health->backend($run->config('backend.health_url'));
+        $backend = $this->health->backend($run->config('backend.health_url'), [
+            (string) ($run->config('backend.tenant_header') ?? 'X-Eduthon-Tenant') => (string) $run->config('backend.tenant'),
+        ]);
 
         foreach ([$portal, $backend] as $result) {
             if (! $result['ok']) {
@@ -270,6 +281,7 @@ final class Pipeline
             'school' => $run->config('school.name'),
             'portal_url' => $run->get('portal_url'),
             'backend_api_url' => $run->config('backend.api_url'),
+            'tenant' => $run->config('backend.tenant'),
             'files' => $run->get('files'),
         ], $run->get('mode') === 'update' ? 'updated' : 'installed');
 

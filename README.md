@@ -6,7 +6,7 @@ The school uploads the `installer/` folder into its website's root and opens `ht
 
 1. Checks the server: PHP 8.1+, the curl, sodium and zip extensions, HTTPS, write access and free disk space.
 2. Confirms the purchase code and secret key with Delwathon Admin and binds the license to this website.
-3. Fetches the school's configuration from Delwathon Admin: the backend URL (under the backend parent URL), the frontend parent URL, the release channel and support contacts. **None of these are built into the installer.** Change them in Delwathon Admin → Settings → Eduthon servers, and new installations pick them up immediately.
+3. Fetches the school's configuration from Delwathon Admin: the shared multi-tenant backend URL, the school's **tenant ID**, the frontend parent URL, the release channel and support contacts. **None of these are built into the installer.** Change them in Delwathon Admin → Settings → Eduthon servers, and new installations pick them up immediately.
 4. Downloads the signed portal release.
 5. **Verifies the package before touching it.** It checks the size, the SHA-256 checksum and the Ed25519 signature against the public keys compiled into the installer. Any mismatch stops the installation, deletes the download and reports the failure. Nothing is extracted or run.
 6. Inspects every archive entry. It rejects path traversal, absolute paths, symlinks, hidden files, zip bombs, reserved files (`.htaccess`, `.user.ini`, `eduthon.config.json`) and anything that isn't a static web file. The portal is a static site, so a package can never contain PHP or other server-side code.
@@ -54,7 +54,7 @@ composer test
 `npm run dev` copies `installer/` into `.sandbox/public_html/installer/` and serves it with PHP's built-in server. The installer can't run from the repository itself, because it deploys into the folder that contains it. The sandbox talks to a local Delwathon Admin at `http://127.0.0.1:8123/api/` by default; set `EDUTHON_ENGINE_URL` to use another. On first run it fetches that engine's release public key, a shortcut meant for development only. To try a full installation locally:
 
 1. In Delwathon Admin, set `ENGINE_SIGNING_KEY`, then upload and publish a frontend release (Releases → Upload, or `php artisan releases:upload frontend 2.5.0 dist.zip --publish`).
-2. Issue a license for a **self-hosted** school whose backend is set or derivable (it has a subdomain).
+2. Issue a license for a school set to **Client-hosted frontend**. It uses the shared backend and its tenant ID automatically.
 3. Run `npm run dev` here, open the installer and enter the license.
 
 After changing installer code, rerun `npm run dev` to copy it into the sandbox.
@@ -81,17 +81,20 @@ The installer writes `eduthon.config.json` in the web root:
 
 ```json
 {
+  "config_version": 2,
   "version": "2.5.0",
   "school": "Heritage College",
-  "api_url": "https://api.delwathon.com/heritage/api/",
-  "backend_url": "https://api.delwathon.com/heritage/",
+  "tenant": "01jk8z3v5t6m9q2w4e7r1y0u3p",
+  "tenant_header": "X-Eduthon-Tenant",
+  "api_url": "https://api.eduthon.ng/api/",
+  "backend_url": "https://api.eduthon.ng/",
   "portal_url": "https://portal.heritage.sch.ng/",
   "engine_url": "https://engine.delwathon.com/api/",
   "installed_at": "2026-09-23T08:32:22+00:00"
 }
 ```
 
-At start-up the Eduthon frontend must load `/eduthon.config.json` and use its `api_url`. If the file is missing, as on Delwathon-hosted portals, it falls back to `GET {engine}/directory?host=…`. The frontend currently hard-codes its API URL in `src/main.js`, so it needs this change before self-hosted portals can reach their backend. Its build is also broken on Linux: `src/router/index.js` imports `permissions/show.vue`, but the file is named `Show.vue`.
+The backend is multi-tenant and is never installed on the school's server (see Delwathon Admin's `docs/multi-tenancy.md`). At start-up the Eduthon frontend must load `/eduthon.config.json`, then send `tenant_header: tenant` on every request to `api_url`. A portal is never connected without a tenant ID. If the file is missing, as on Delwathon-hosted portals, it falls back to `GET {engine}/directory?host=…`. The frontend currently hard-codes its API URL in `src/main.js`, so it needs this change before self-hosted portals can reach their backend. Its build is also broken on Linux: `src/router/index.js` imports `permissions/show.vue`, but the file is named `Show.vue`.
 
 ## What changed from the previous installer
 

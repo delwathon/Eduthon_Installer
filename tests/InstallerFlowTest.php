@@ -58,7 +58,8 @@ final class InstallerFlowTest extends TestCase
 
         $review = $this->get('page=review');
         $this->assertStringContainsString('Heritage College', $review->body);
-        $this->assertStringContainsString('https://api.delwathon.com/heritage/', $review->body);
+        $this->assertStringContainsString('https://api.delwathon.com/', $review->body);
+        $this->assertStringContainsString('01jk8z3v5t6m9q2w4e7r1y0u3p', $review->body);
         $this->assertStringContainsString('This website already has content', $review->body);
 
         $this->assertRedirect($this->post('page=review'), 'page=install');
@@ -72,7 +73,10 @@ final class InstallerFlowTest extends TestCase
         $this->assertFileExists($this->webRoot.'/assets/app-2.5.0.js');
 
         $config = json_decode(file_get_contents($this->webRoot.'/eduthon.config.json'), true);
-        $this->assertSame('https://api.delwathon.com/heritage/api/', $config['api_url']);
+        $this->assertSame('https://api.delwathon.com/api/', $config['api_url']);
+        $this->assertSame('01jk8z3v5t6m9q2w4e7r1y0u3p', $config['tenant']);
+        $this->assertSame('X-Eduthon-Tenant', $config['tenant_header']);
+        $this->assertSame('01jk8z3v5t6m9q2w4e7r1y0u3p', $this->engine->sent('api/verify-install')['headers']['X-Eduthon-Tenant'], 'The health check identifies the tenant.');
         $this->assertSame('2.5.0', $config['version']);
         $this->assertStringContainsString('# BEGIN Eduthon', file_get_contents($this->webRoot.'/.htaccess'));
 
@@ -143,6 +147,26 @@ final class InstallerFlowTest extends TestCase
         $this->assertStringContainsString('restored', $result['message']);
         $this->assertSame('Default hosting page', file_get_contents($this->webRoot.'/index.html'));
         $this->assertDirectoryDoesNotExist($this->webRoot.'/assets');
+    }
+
+    #[Test]
+    public function a_portal_is_never_connected_without_a_tenant(): void
+    {
+        $config = $this->installerConfig();
+        $config['backend']['tenant'] = null;
+        $this->engine->on('GET', 'installer/config', $config);
+        file_put_contents($this->webRoot.'/index.html', 'Default hosting page');
+        $this->startInstall();
+
+        foreach (['download', 'verify', 'inspect', 'deploy'] as $task) {
+            $this->task($task);
+        }
+
+        $result = $this->task('configure');
+
+        $this->assertSame('failed', $result['status']);
+        $this->assertStringContainsString('tenant ID', $result['message']);
+        $this->assertSame('Default hosting page', file_get_contents($this->webRoot.'/index.html'));
     }
 
     #[Test]
@@ -322,8 +346,8 @@ final class InstallerFlowTest extends TestCase
             'school' => ['name' => 'Heritage College', 'hosting' => 'self_hosted'],
             'servers' => ['backend_parent_url' => 'https://api.delwathon.com', 'frontend_parent_url' => 'https://eduthon.ng', 'engine_url' => 'https://engine.delwathon.com/api/'],
             'backend' => $backendReady
-                ? ['ready' => true, 'url' => 'https://api.delwathon.com/heritage/', 'api_url' => 'https://api.delwathon.com/heritage/api/', 'health_url' => 'https://api.delwathon.com/heritage/api/verify-install']
-                : ['ready' => false, 'url' => null, 'api_url' => null, 'health_url' => null],
+                ? ['ready' => true, 'tenant' => '01jk8z3v5t6m9q2w4e7r1y0u3p', 'tenant_header' => 'X-Eduthon-Tenant', 'dedicated' => false, 'url' => 'https://api.delwathon.com/', 'api_url' => 'https://api.delwathon.com/api/', 'health_url' => 'https://api.delwathon.com/api/verify-install']
+                : ['ready' => false, 'tenant' => null, 'url' => null, 'api_url' => null, 'health_url' => null],
             'releases' => ['channel' => 'stable', 'frontend' => '2.5.0'],
             'support' => ['company' => 'Delwathon IT Solutions', 'email' => 'support@delwathon.com'],
         ];

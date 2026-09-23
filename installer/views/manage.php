@@ -21,6 +21,7 @@
     <div class="grid gap-1 px-4 py-3 sm:grid-cols-3"><dt class="text-ink-muted">School</dt><dd class="font-medium sm:col-span-2"><?= e($state['school'] ?? '—') ?></dd></div>
     <div class="grid gap-1 px-4 py-3 sm:grid-cols-3"><dt class="text-ink-muted">Portal</dt><dd class="font-mono text-[13px] break-all sm:col-span-2"><a class="text-brand hover:underline" href="<?= e($state['portal_url'] ?? '#') ?>"><?= e($state['portal_url'] ?? '—') ?></a></dd></div>
     <div class="grid gap-1 px-4 py-3 sm:grid-cols-3"><dt class="text-ink-muted">Backend</dt><dd class="font-mono text-[13px] break-all sm:col-span-2"><?= e($state['backend_api_url'] ?? '—') ?></dd></div>
+    <div class="grid gap-1 px-4 py-3 sm:grid-cols-3"><dt class="text-ink-muted">Tenant ID</dt><dd class="font-mono text-[13px] sm:col-span-2"><?= e($state['tenant'] ?? '—') ?></dd></div>
     <div class="grid gap-1 px-4 py-3 sm:grid-cols-3"><dt class="text-ink-muted">Purchase code</dt><dd class="font-mono text-[13px] sm:col-span-2"><?= e($state['purchase_code'] ?? '—') ?></dd></div>
 </dl>
 
