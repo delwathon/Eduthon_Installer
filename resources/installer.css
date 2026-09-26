@@ -5,7 +5,10 @@
 @theme {
     --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-    --color-rail: #0a1a44;
+    /* Eduthon brand: the portal's deep blue rail, blue #003399 and green #00A859. */
+    --color-rail: #001f5e;
+    --color-ed-green: #00a859;
+    --color-ed-green-dark: #008f4c;
 }
 
 @theme inline {
@@ -29,7 +32,7 @@
     --ink: #0d1628;
     --ink-muted: #4a5773;
     --ink-subtle: #7a869d;
-    --brand: #1a44c2;
+    --brand: #003399;
     color-scheme: light;
 }
 
@@ -43,7 +46,7 @@
         --ink: #e6ebf5;
         --ink-muted: #a1acc3;
         --ink-subtle: #6b7792;
-        --brand: #7aa2ff;
+        --brand: #7e9fe2;
         color-scheme: dark;
     }
 }
@@ -56,7 +59,7 @@
 
 @layer components {
     .btn-primary {
-        @apply inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg whitespace-nowrap bg-[#1a44c2] px-5 text-[14.5px] font-semibold text-white shadow-sm transition hover:bg-[#1537a3] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#2f5ae0] dark:hover:bg-[#3d68ee];
+        @apply inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg whitespace-nowrap bg-ed-green px-5 text-[14.5px] font-semibold text-white shadow-sm transition hover:bg-ed-green-dark disabled:cursor-not-allowed disabled:opacity-50;
     }
 
     .btn-ghost {
